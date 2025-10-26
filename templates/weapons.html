@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Зброя - Колекція страйкбольної зброї{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-gun me-2"></i>
+        Моя колекція зброї
+    </h1>
+    <a href="{{ url_for('add_weapon') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>
+        Додати зброю
+    </a>
+</div>
+
+<!-- Компактне віконце зі статистикою -->
+{% include 'stats_widget.html' %}
+
+<!-- Фільтри та сортування -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h6 class="card-title">
+            <i class="fas fa-filter me-2"></i>
+            Фільтри та сортування
+        </h6>
+        <div class="row align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Сортувати за:</label>
+                <select class="form-select" id="sortBy" onchange="updateSort()">
+                    <option value="created_at" {{ 'selected' if sort_by == 'created_at' }}>Дата додавання</option>
+                    <option value="name" {{ 'selected' if sort_by == 'name' }}>Назва (А-Я)</option>
+                    <option value="brand" {{ 'selected' if sort_by == 'brand' }}>Бренд (А-Я)</option>
+                    <option value="purchase_date" {{ 'selected' if sort_by == 'purchase_date' }}>Дата придбання</option>
+                    <option value="purchase_price" {{ 'selected' if sort_by == 'purchase_price' }}>Ціна</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Порядок:</label>
+                <select class="form-select" id="sortOrder" onchange="updateSort()">
+                    <option value="desc" {{ 'selected' if order == 'desc' }}>За спаданням</option>
+                    <option value="asc" {{ 'selected' if order == 'asc' }}>За зростанням</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary" onclick="resetFilters()">
+                    <i class="fas fa-undo me-1"></i>
+                    Скинути
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if weapons %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Назва</th>
+                        <th>Тип</th>
+                        <th>Бренд</th>
+                        <th>Статус</th>
+                        <th>FPS / Джоулі</th>
+                        <th>Модулі</th>
+                        <th>Ціна</th>
+                        <th>Дата додавання</th>
+                        <th width="150">Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for weapon in weapons %}
+                    <tr>
+                        <td>
+                            <strong>{{ weapon.name }}</strong>
+                            {% if weapon.notes %}
+                                <br><small class="text-muted">{{ weapon.notes[:50] }}{% if weapon.notes|length > 50 %}...{% endif %}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ weapon.weapon_type }}</span>
+                        </td>
+                        <td>{{ weapon.brand }} {{ weapon.model }}</td>
+                        <td>
+                            {% if weapon.is_tuned %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Налагоджена
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-wrench me-1"></i>Потребує налагодження
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if weapon.fps %}{{ weapon.fps }} FPS{% endif %}
+                            {% if weapon.fps and weapon.joules %} / {% endif %}
+                            {% if weapon.joules %}{{ "%.2f"|format(weapon.joules) }}J{% endif %}
+                            {% if not weapon.fps and not weapon.joules %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if weapon.modules %}
+                                <span class="badge bg-info">{{ weapon.modules|length }} шт.</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if weapon.purchase_price %}
+                                {{ "%.0f"|format(weapon.purchase_price) }} грн
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ weapon.created_at.strftime('%d.%m.%Y') }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('weapon_detail', id=weapon.id) }}" class="btn btn-outline-primary" title="Переглянути">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_weapon', id=weapon.id) }}" class="btn btn-outline-secondary" title="Редагувати">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('toggle_weapon_tuned', id=weapon.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-info" title="Змінити статус налагодження">
+                                        <i class="fas fa-sync"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('delete_weapon', id=weapon.id) }}" class="d-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цю зброю з колекції?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-danger delete-btn" title="Видалити">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-gun fa-3x text-muted mb-3"></i>
+        <h3 class="text-muted">Колекція порожня</h3>
+        <p class="text-muted">Додайте свою першу зброю до колекції</p>
+        <a href="{{ url_for('add_weapon') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>
+            Додати зброю
+        </a>
+    </div>
+{% endif %}
+
+<script>
+function updateSort() {
+    const sortBy = document.getElementById('sortBy').value;
+    const order = document.getElementById('sortOrder').value;
+    window.location.href = `{{ url_for('weapons') }}?sort=${sortBy}&order=${order}`;
+}
+
+function resetFilters() {
+    window.location.href = `{{ url_for('weapons') }}`;
+}
+</script>
+{% endblock %}

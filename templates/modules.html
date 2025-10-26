@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Модулі - Колекція страйкбольної зброї{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-puzzle-piece me-2"></i>
+        Модулі та аксесуари
+    </h1>
+    <a href="{{ url_for('add_module') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>
+        Додати модуль
+    </a>
+</div>
+
+<!-- Компактне віконце зі статистикою -->
+{% include 'stats_widget.html' %}
+
+<!-- Фільтри та сортування -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h6 class="card-title">
+            <i class="fas fa-filter me-2"></i>
+            Фільтри та сортування
+        </h6>
+        <div class="row align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Сортувати за:</label>
+                <select class="form-select" id="sortBy" onchange="updateSort()">
+                    <option value="created_at" {{ 'selected' if sort_by == 'created_at' }}>Дата додавання</option>
+                    <option value="name" {{ 'selected' if sort_by == 'name' }}>Назва (А-Я)</option>
+                    <option value="module_type" {{ 'selected' if sort_by == 'module_type' }}>Тип модуля (А-Я)</option>
+                    <option value="brand" {{ 'selected' if sort_by == 'brand' }}>Бренд (А-Я)</option>
+                    <option value="purchase_date" {{ 'selected' if sort_by == 'purchase_date' }}>Дата придбання</option>
+                    <option value="purchase_price" {{ 'selected' if sort_by == 'purchase_price' }}>Ціна</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Порядок:</label>
+                <select class="form-select" id="sortOrder" onchange="updateSort()">
+                    <option value="desc" {{ 'selected' if order == 'desc' }}>За спаданням</option>
+                    <option value="asc" {{ 'selected' if order == 'asc' }}>За зростанням</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary" onclick="resetFilters()">
+                    <i class="fas fa-undo me-1"></i>
+                    Скинути
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if modules %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Назва</th>
+                        <th>Тип</th>
+                        <th>Бренд</th>
+                        <th>Статус</th>
+                        <th>Прикріплено до</th>
+                        <th>Ціна</th>
+                        <th>Дата додавання</th>
+                        <th width="150">Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for module in modules %}
+                    <tr>
+                        <td>
+                            <strong>{{ module.name }}</strong>
+                            {% if module.notes %}
+                                <br><small class="text-muted">{{ module.notes[:50] }}{% if module.notes|length > 50 %}...{% endif %}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ module.module_type }}</span>
+                        </td>
+                        <td>{{ module.brand or '-' }}</td>
+                        <td>
+                            {% if module.is_used %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Використовується
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-times me-1"></i>Не використовується
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if module.weapon %}
+                                <a href="{{ url_for('weapon_detail', id=module.weapon.id) }}" class="text-decoration-none">
+                                    {{ module.weapon.brand }} {{ module.weapon.model }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Не прикріплено</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if module.purchase_price %}
+                                {{ "%.0f"|format(module.purchase_price) }} грн
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ module.created_at.strftime('%d.%m.%Y') }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('edit_module', id=module.id) }}" class="btn btn-outline-primary" title="Редагувати">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('toggle_module_used', id=module.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-secondary" title="Змінити статус використання">
+                                        <i class="fas fa-sync"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('delete_module', id=module.id) }}" class="d-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цей модуль?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-danger delete-btn" title="Видалити">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Summary Card -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ modules|length }}</h5>
+                    <p class="card-text text-muted">Всього модулів</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-success">{{ modules|selectattr('is_used')|list|length }}</h5>
+                    <p class="card-text text-muted">Використовується</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-secondary">{{ modules|rejectattr('is_used')|list|length }}</h5>
+                    <p class="card-text text-muted">Не використовується</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-info">{{ modules|selectattr('weapon')|list|length }}</h5>
+                    <p class="card-text text-muted">Прикріплено до зброї</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-puzzle-piece fa-3x text-muted mb-3"></i>
+        <h3 class="text-muted">Модулів немає</h3>
+        <p class="text-muted">Додайте свій перший модуль або аксесуар</p>
+        <a href="{{ url_for('add_module') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>
+            Додати модуль
+        </a>
+    </div>
+{% endif %}
+
+<script>
+function updateSort() {
+    const sortBy = document.getElementById('sortBy').value;
+    const order = document.getElementById('sortOrder').value;
+    window.location.href = `{{ url_for('modules') }}?sort=${sortBy}&order=${order}`;
+}
+
+function resetFilters() {
+    window.location.href = `{{ url_for('modules') }}`;
+}
+</script>
+{% endblock %}

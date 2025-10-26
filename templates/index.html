@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Головна - Колекція страйкбольної зброї{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="display-4 mb-4">
+        <i class="fas fa-crosshairs me-3"></i>
+        Колекція страйкболу
+    </h1>
+    <p class="lead text-muted">Управління колекцією зброї та модулів</p>
+</div>
+
+<!-- Компактне віконце зі статистикою -->
+<div class="row mb-5">
+    <div class="col-lg-8 mx-auto">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-white">
+                <h5 class="card-title mb-4">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Загальна статистика колекції
+                </h5>
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex flex-column">
+                            <h2 class="mb-1">{{ stats.weapons_count }}</h2>
+                            <small class="opacity-75">Одиниць зброї</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex flex-column">
+                            <h2 class="mb-1">{{ stats.modules_count }}</h2>
+                            <small class="opacity-75">Модулів</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex flex-column">
+                            <h2 class="mb-1">{{ "%.0f"|format(stats.total_value) }} грн</h2>
+                            <small class="opacity-75">Загальна вартість</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Головне меню -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 menu-card">
+            <div class="card-body text-center d-flex flex-column">
+                <div class="mb-4">
+                    <i class="fas fa-gun fa-4x text-primary mb-3"></i>
+                    <h4>Зброя</h4>
+                    <p class="text-muted">Переглянути, додавати та керувати зброєю в колекції</p>
+                </div>
+                <div class="mt-auto">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('weapons') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-list me-2"></i>
+                            Переглянути зброю
+                        </a>
+                        <a href="{{ url_for('add_weapon') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            Додати нову зброю
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 menu-card">
+            <div class="card-body text-center d-flex flex-column">
+                <div class="mb-4">
+                    <i class="fas fa-puzzle-piece fa-4x text-success mb-3"></i>
+                    <h4>Модулі</h4>
+                    <p class="text-muted">Керування модулями та аксесуарами для зброї</p>
+                </div>
+                <div class="mt-auto">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('modules') }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-list me-2"></i>
+                            Переглянути модулі
+                        </a>
+                        <a href="{{ url_for('add_module') }}" class="btn btn-outline-success">
+                            <i class="fas fa-plus me-2"></i>
+                            Додати новий модуль
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.menu-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

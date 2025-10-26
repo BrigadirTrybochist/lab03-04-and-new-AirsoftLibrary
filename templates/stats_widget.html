@@ -1,0 +1,24 @@
+{# Small statistics widget used on weapons/modules/index pages #}
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="row text-center">
+      <div class="col-4">
+        <h6 class="mb-0">Зброя</h6>
+        <p class="h4 mb-0">{{ stats['weapons_count'] }}</p>
+      </div>
+      <div class="col-4">
+        <h6 class="mb-0">Модулі</h6>
+        <p class="h4 mb-0">{{ stats['modules_count'] }}</p>
+      </div>
+      <div class="col-4">
+        <h6 class="mb-0">Загальна вартість</h6>
+        <p class="h4 mb-0">{{ "{:.2f}".format(stats['total_value']) if stats['total_value'] is not none else '0.00' }} ₴</p>
+      </div>
+    </div>
+    <div class="mt-3 small text-muted text-center">
+      <span>Зброя: {{ "{:.2f}".format(stats['weapons_total']) if stats['weapons_total'] else '0.00' }} ₴</span>
+      &nbsp;·&nbsp;
+      <span>Модулі: {{ "{:.2f}".format(stats['modules_total']) if stats['modules_total'] else '0.00' }} ₴</span>
+    </div>
+  </div>
+</div>
