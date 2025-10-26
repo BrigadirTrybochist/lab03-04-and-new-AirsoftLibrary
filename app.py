@@ -1,72 +1,105 @@
+"""Entry point for the lab03 Flask project.
+
+If the larger `AirsoftArsenal` application exists in the workspace, delegate
+to that app (so the Airsoft Arsenal site runs). Otherwise run a small demo
+app that uses the local templates.
+
+Note: we intentionally do NOT import any Replit-specific files; those live
+under `AirsoftArsenal/.local` or similar and are ignored.
+"""
+
 import os
-import logging
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
-from werkzeug.middleware.proxy_fix import ProxyFix
+import sys
+from flask import Flask, render_template
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Try to locate and delegate to the AirsoftArsenal app if present
+app = None
+try:
+    # First try a local copy placed under lab03-flaskProject/airsoft_site
+    local_site_dir = os.path.join(os.path.dirname(__file__), 'airsoft_site')
+    airsoft_app = None
+    if os.path.isdir(local_site_dir):
+        local_app_path = os.path.join(local_site_dir, 'app.py')
+        if os.path.isfile(local_app_path):
+            import importlib.util
+            spec = importlib.util.spec_from_file_location('airsoft_local_app', local_app_path)
+            if spec and spec.loader:
+                airsoft_mod = importlib.util.module_from_spec(spec)
+                sys.modules['airsoft_local_app'] = airsoft_mod
+                # Temporarily ensure local_site_dir is on sys.path so absolute imports inside the module work
+                inserted = False
+                if local_site_dir not in sys.path:
+                    sys.path.insert(0, local_site_dir)
+                    inserted = True
 
-# Create the app
-app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+                previous_app_mod = sys.modules.get('app')
+                sys.modules['app'] = airsoft_mod
+                try:
+                    spec.loader.exec_module(airsoft_mod)
+                finally:
+                    if previous_app_mod is not None:
+                        sys.modules['app'] = previous_app_mod
+                    else:
+                        del sys.modules['app']
+                    if inserted:
+                        try:
+                            sys.path.remove(local_site_dir)
+                        except ValueError:
+                            pass
 
-# Test database connection and configure appropriately
-def get_working_database_uri():
-    """Test PostgreSQL connection and fallback to SQLite if needed"""
-    postgres_url = os.environ.get("DATABASE_URL")
-    
-    if postgres_url and not postgres_url.startswith("sqlite://"):
-        try:
-            # Test PostgreSQL connection
-            import psycopg2
-            from urllib.parse import urlparse
-            
-            parsed = urlparse(postgres_url)
-            
-            # Quick connection test
-            test_conn = psycopg2.connect(
-                host=parsed.hostname,
-                port=parsed.port,
-                user=parsed.username,
-                password=parsed.password,
-                database=parsed.path[1:]  # Remove leading slash
-            )
-            test_conn.close()
-            
-            print("PostgreSQL connection successful")
-            return postgres_url
-            
-        except Exception as e:
-            print(f"PostgreSQL connection failed: {e}")
-            print("Falling back to SQLite database...")
-    
-    # Default to SQLite file inside this package's instance folder
-    instance_db = os.path.join(os.path.dirname(__file__), 'instance', 'airsoft_collection.db')
-    return f"sqlite:///{instance_db}"
+                airsoft_app = getattr(airsoft_mod, 'app', None)
 
-# Configure the database with working connection
-database_url = get_working_database_uri()
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-# SQLAlchemy engine options
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
-# Import models (models defines `db`) and initialize the extension
-import models
-db = models.db
-db.init_app(app)
+    # If no local copy, fall back to sibling AirsoftArsenal folder
+    if not airsoft_app:
+        workspace_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        airsoft_path = os.path.join(workspace_root, 'AirsoftArsenal')
+        if os.path.isdir(airsoft_path):
+            airsoft_app_path = os.path.join(airsoft_path, 'app.py')
+            if os.path.isfile(airsoft_app_path):
+                import importlib.util
+                spec = importlib.util.spec_from_file_location('airsoft_app', airsoft_app_path)
+                if spec and spec.loader:
+                    airsoft_mod = importlib.util.module_from_spec(spec)
+                    sys.modules['airsoft_app'] = airsoft_mod
+                    inserted = False
+                    if airsoft_path not in sys.path:
+                        sys.path.insert(0, airsoft_path)
+                        inserted = True
 
-# Initialize CSRF protection
-csrf = CSRFProtect(app)
+                    previous_app_mod = sys.modules.get('app')
+                    sys.modules['app'] = airsoft_mod
+                    try:
+                        spec.loader.exec_module(airsoft_mod)
+                    finally:
+                        if previous_app_mod is not None:
+                            sys.modules['app'] = previous_app_mod
+                        else:
+                            del sys.modules['app']
+                        if inserted:
+                            try:
+                                sys.path.remove(airsoft_path)
+                            except ValueError:
+                                pass
 
-# Import routes (after db is available)
-import routes
+                    airsoft_app = getattr(airsoft_mod, 'app', None)
 
-# Initialize database tables
-with app.app_context():
-    db.create_all()
-    print(f"Database tables created successfully using: {database_url.split('://')[0]}://...")
+    if airsoft_app:
+        app = airsoft_app
+        print('Delegating to AirsoftArsenal.app')
+except Exception as e:
+    # If anything goes wrong, fall back to the simple lab03 app
+    print(f'Could not load AirsoftArsenal app (falling back). Error: {e}')
+    app = Flask(__name__)
+
+    @app.route('/')
+    def home():
+        return render_template('home.html')
+
+    @app.route('/about')
+    def about():
+        return render_template('about.html')
+
+
+if __name__ == '__main__':
+    # Run with reloader off for clearer console output during development
+    app.run(debug=True, use_reloader=False)
