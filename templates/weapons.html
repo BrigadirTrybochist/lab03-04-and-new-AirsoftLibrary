@@ -8,7 +8,7 @@
         <i class="fas fa-gun me-2"></i>
         Моя колекція зброї
     </h1>
-    <a href="{{ url_for('add_weapon') }}" class="btn btn-primary">
+    <a href="{{ url_for('main.add_weapon') }}" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i>
         Додати зброю
     </a>
@@ -120,19 +120,19 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('weapon_detail', id=weapon.id) }}" class="btn btn-outline-primary" title="Переглянути">
+                                <a href="{{ url_for('main.weapon_detail', id=weapon.id) }}" class="btn btn-outline-primary" title="Переглянути">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ url_for('edit_weapon', id=weapon.id) }}" class="btn btn-outline-secondary" title="Редагувати">
+                                <a href="{{ url_for('main.edit_weapon', id=weapon.id) }}" class="btn btn-outline-secondary" title="Редагувати">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('toggle_weapon_tuned', id=weapon.id) }}" class="d-inline">
+                                <form method="POST" action="{{ url_for('main.toggle_weapon_tuned', id=weapon.id) }}" class="d-inline">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-outline-info" title="Змінити статус налагодження">
                                         <i class="fas fa-sync"></i>
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ url_for('delete_weapon', id=weapon.id) }}" class="d-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цю зброю з колекції?')">
+                                <form method="POST" action="{{ url_for('main.delete_weapon', id=weapon.id) }}" class="d-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цю зброю з колекції?')">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-outline-danger delete-btn" title="Видалити">
                                         <i class="fas fa-trash"></i>
@@ -151,7 +151,7 @@
         <i class="fas fa-gun fa-3x text-muted mb-3"></i>
         <h3 class="text-muted">Колекція порожня</h3>
         <p class="text-muted">Додайте свою першу зброю до колекції</p>
-        <a href="{{ url_for('add_weapon') }}" class="btn btn-primary">
+        <a href="{{ url_for('main.add_weapon') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>
             Додати зброю
         </a>
@@ -162,11 +162,11 @@
 function updateSort() {
     const sortBy = document.getElementById('sortBy').value;
     const order = document.getElementById('sortOrder').value;
-    window.location.href = `{{ url_for('weapons') }}?sort=${sortBy}&order=${order}`;
+    window.location.href = `{{ url_for('main.weapons') }}?sort=${sortBy}&order=${order}`;
 }
 
 function resetFilters() {
-    window.location.href = `{{ url_for('weapons') }}`;
+    window.location.href = `{{ url_for('main.weapons') }}`;
 }
 </script>
 {% endblock %}

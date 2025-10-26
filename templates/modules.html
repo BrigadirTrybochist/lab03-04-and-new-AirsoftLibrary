@@ -8,7 +8,7 @@
         <i class="fas fa-puzzle-piece me-2"></i>
         Модулі та аксесуари
     </h1>
-    <a href="{{ url_for('add_module') }}" class="btn btn-primary">
+    <a href="{{ url_for('main.add_module') }}" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i>
         Додати модуль
     </a>
@@ -95,7 +95,7 @@
                         </td>
                         <td>
                             {% if module.weapon %}
-                                <a href="{{ url_for('weapon_detail', id=module.weapon.id) }}" class="text-decoration-none">
+                                <a href="{{ url_for('main.weapon_detail', id=module.weapon.id) }}" class="text-decoration-none">
                                     {{ module.weapon.brand }} {{ module.weapon.model }}
                                 </a>
                             {% else %}
@@ -116,16 +116,16 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('edit_module', id=module.id) }}" class="btn btn-outline-primary" title="Редагувати">
+                                <a href="{{ url_for('main.edit_module', id=module.id) }}" class="btn btn-outline-primary" title="Редагувати">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('toggle_module_used', id=module.id) }}" class="d-inline">
+                                <form method="POST" action="{{ url_for('main.toggle_module_used', id=module.id) }}" class="d-inline">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-outline-secondary" title="Змінити статус використання">
                                         <i class="fas fa-sync"></i>
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ url_for('delete_module', id=module.id) }}" class="d-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цей модуль?')">
+                                <form method="POST" action="{{ url_for('main.delete_module', id=module.id) }}" class="d-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цей модуль?')">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-outline-danger delete-btn" title="Видалити">
                                         <i class="fas fa-trash"></i>
@@ -180,7 +180,7 @@
         <i class="fas fa-puzzle-piece fa-3x text-muted mb-3"></i>
         <h3 class="text-muted">Модулів немає</h3>
         <p class="text-muted">Додайте свій перший модуль або аксесуар</p>
-        <a href="{{ url_for('add_module') }}" class="btn btn-primary">
+        <a href="{{ url_for('main.add_module') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>
             Додати модуль
         </a>
@@ -191,11 +191,11 @@
 function updateSort() {
     const sortBy = document.getElementById('sortBy').value;
     const order = document.getElementById('sortOrder').value;
-    window.location.href = `{{ url_for('modules') }}?sort=${sortBy}&order=${order}`;
+    window.location.href = `{{ url_for('main.modules') }}?sort=${sortBy}&order=${order}`;
 }
 
 function resetFilters() {
-    window.location.href = `{{ url_for('modules') }}`;
+    window.location.href = `{{ url_for('main.modules') }}`;
 }
 </script>
 {% endblock %}
