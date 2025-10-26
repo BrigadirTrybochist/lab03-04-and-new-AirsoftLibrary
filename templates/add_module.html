@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{% if module %}Редагувати{% else %}Додати{% endif %} модуль - Колекція страйкбольної зброї{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('modules') }}">Модулі</a></li>
+            {% if module %}
+                <li class="breadcrumb-item active">Редагувати</li>
+            {% else %}
+                <li class="breadcrumb-item active">Додати новий</li>
+            {% endif %}
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-{% if module %}edit{% else %}plus{% endif %} me-2"></i>
+                    {% if module %}Редагувати модуль{% else %}Додати модуль{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">{{ form.name.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.module_type.label(class="form-label") }}
+                            {{ form.module_type(class="form-select" + (" is-invalid" if form.module_type.errors else "")) }}
+                            {% if form.module_type.errors %}
+                                <div class="invalid-feedback">{{ form.module_type.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.brand.label(class="form-label") }}
+                            {{ form.brand(class="form-control" + (" is-invalid" if form.brand.errors else "")) }}
+                            {% if form.brand.errors %}
+                                <div class="invalid-feedback">{{ form.brand.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.weapon_id.label(class="form-label") }}
+                            {{ form.weapon_id(class="form-select" + (" is-invalid" if form.weapon_id.errors else "")) }}
+                            {% if form.weapon_id.errors %}
+                                <div class="invalid-feedback">{{ form.weapon_id.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.purchase_date.label(class="form-label") }}
+                            {{ form.purchase_date(class="form-control" + (" is-invalid" if form.purchase_date.errors else "")) }}
+                            {% if form.purchase_date.errors %}
+                                <div class="invalid-feedback">{{ form.purchase_date.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.purchase_price.label(class="form-label") }}
+                            {{ form.purchase_price(class="form-control" + (" is-invalid" if form.purchase_price.errors else "")) }}
+                            {% if form.purchase_price.errors %}
+                                <div class="invalid-feedback">{{ form.purchase_price.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        {{ form.is_used(class="form-check-input") }}
+                        {{ form.is_used.label(class="form-check-label") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.notes.label(class="form-label") }}
+                        {{ form.notes(class="form-control" + (" is-invalid" if form.notes.errors else "")) }}
+                        {% if form.notes.errors %}
+                            <div class="invalid-feedback">{{ form.notes.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('modules') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Скасувати
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> {% if module %}Оновити{% else %}Додати{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
